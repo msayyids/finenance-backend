@@ -14,6 +14,6 @@ type UserVerificationRepositoryImplementation interface {
 	FindUserVerifByKey(db *sqlx.Tx, userVerification *entity.UserVerification) (*entity.UserVerification, error)
 }
 
-func NewUserVerification() UserVerificationRepositoryImplementation {
+func NewUserVerificationRepository() UserVerificationRepositoryImplementation {
 	return &UserVerificationRepository{}
 }

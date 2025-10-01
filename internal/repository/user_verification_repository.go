@@ -40,3 +40,8 @@ func (vr *UserVerificationRepository) FindUserVerifByKey(db *sqlx.Tx, userVerifi
 
 	return userVerification, nil
 }
+
+func (vr *UserVerificationRepository) UpdateVerificationByUserId(db *sqlx.Tx) (*entity.UserVerification, error) {
+
+	return &entity.UserVerification{}, nil
+}

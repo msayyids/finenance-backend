@@ -11,8 +11,9 @@ import (
 )
 
 type UserController struct {
-	Log         *zap.Logger
-	UserUsecase usecase.UserUsecaseImplementation
+	Log              *zap.Logger
+	UserUsecase      usecase.UserUsecaseImplementation
+	userVerifUsecase usecase.UserVerifUsecaseImplementation
 }
 
 type UserControllerImplementation interface {
@@ -22,10 +23,11 @@ type UserControllerImplementation interface {
 	Logout(c fiber.Ctx) error
 }
 
-func NewUserController(log *zap.Logger, us usecase.UserUsecaseImplementation) UserControllerImplementation {
+func NewUserController(log *zap.Logger, us usecase.UserUsecaseImplementation, uv usecase.UserVerifUsecaseImplementation) UserControllerImplementation {
 	return &UserController{
-		Log:         log,
-		UserUsecase: us,
+		Log:              log,
+		UserUsecase:      us,
+		userVerifUsecase: uv,
 	}
 }
 
