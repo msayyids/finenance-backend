@@ -135,7 +135,11 @@ func (uc *UserUsecase) Login(userRequest *model.UserLoginRequest) (model.UserLog
 		return model.UserLoginResponse{}, fiber.ErrInternalServerError
 	}
 
-	uc.ReddisClient.Set(context.Background(), "user_id_"+stringUserId, refreshToken, exprefreshToken)
+	err = uc.ReddisClient.Set(context.Background(), "user_id_"+stringUserId, refreshToken, exprefreshToken).Err()
+	if err != nil {
+		uc.Log.Warn("failed to refresh token", zap.Error(err))
+		return model.UserLoginResponse{}, fiber.ErrInternalServerError
+	}
 	response := model.UserLoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
