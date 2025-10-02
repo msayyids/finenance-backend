@@ -26,12 +26,12 @@ type AppConfig struct {
 
 func NewAppConfig(config *AppConfig) {
 	//	setup
-	userVerifRepo := repository.NewUserVerificationRepository()
-	userVerifUsecase := usecase.NewUserVerifUsecase(config.DB, config.Log, config.Validate, config.Redis, userVerifRepo)
+
+	categoryRepository := repository.NewCategoriesRepository()
 
 	userRepository := repository.NewUserRepository()
-	userUsecase := usecase.NewUserUsecase(config.DB, config.Log, config.Validate, config.Redis, userRepository)
-	userController := http.NewUserController(config.Log, userUsecase, userVerifUsecase)
+	userUsecase := usecase.NewUserUsecase(config.DB, config.Log, config.Validate, config.Redis, userRepository, categoryRepository)
+	userController := http.NewUserController(config.Log, userUsecase)
 
 	authMiddleware := middleware.NewAuth()
 

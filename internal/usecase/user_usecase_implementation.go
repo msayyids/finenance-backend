@@ -22,14 +22,16 @@ type UserUsecase struct {
 	Validator    *validator.Validate
 	ReddisClient *redis.Client
 	UserRepo     repository.UserRepositoryImplementation
+	CategoryRepo repository.CategoriesRepositoryImplementation
 }
 
-func NewUserUsecase(db *sqlx.DB, log *zap.Logger, v *validator.Validate, r *redis.Client, ur repository.UserRepositoryImplementation) UserUsecaseImplementation {
+func NewUserUsecase(db *sqlx.DB, log *zap.Logger, v *validator.Validate, r *redis.Client, ur repository.UserRepositoryImplementation, cr repository.CategoriesRepositoryImplementation) UserUsecaseImplementation {
 	return &UserUsecase{
 		DB:           db,
 		Log:          log,
 		Validator:    v,
 		ReddisClient: r,
 		UserRepo:     ur,
+		CategoryRepo: cr,
 	}
 }

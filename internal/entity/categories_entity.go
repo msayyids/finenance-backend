@@ -3,9 +3,9 @@ package entity
 import "time"
 
 type Categories struct {
-	Id         int       `db:"id"`
-	Name       string    `db:"name"`
+	Id         int
 	User_Id    int       `db:"user_id"`
-	Type       int       `db:"type"`
+	Name       string    `db:"name"`
+	Type       string    `db:"type"`
 	Created_at time.Time `db:"created_at"`
 }

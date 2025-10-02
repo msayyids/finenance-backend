@@ -23,7 +23,7 @@ func GenerateToken(userId string, role string, expiredTime time.Duration) (strin
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	ss, err := token.SignedString(viper.GetString("JWT_SECRET_KEY"))
+	ss, err := token.SignedString([]byte(viper.GetString("JWT_SECRET_KEY")))
 	if err != nil {
 		return "", err
 	}

@@ -11,6 +11,7 @@ type CategoriesRepository struct{}
 type CategoriesRepositoryImplementation interface {
 	AddCategory(db *sqlx.Tx, category *entity.Categories) error
 	GetAllCategories(db *sqlx.Tx, user_id int) (*[]entity.Categories, error)
+	AddDefaultCategory(db *sqlx.Tx, categories []entity.Categories) error
 }
 
 func NewCategoriesRepository() CategoriesRepositoryImplementation {

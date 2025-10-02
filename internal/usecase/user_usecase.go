@@ -14,6 +14,7 @@ import (
 )
 
 func (uc *UserUsecase) Create(userRequest *model.UsersRegisterRequest) (model.UsersResponseRegister, error) {
+
 	tx, err := uc.DB.Beginx()
 	if err != nil {
 		uc.Log.Error("failed to create transaction", zap.Error(err))
@@ -48,6 +49,39 @@ func (uc *UserUsecase) Create(userRequest *model.UsersRegisterRequest) (model.Us
 		uc.Log.Warn("failed to create user", zap.Error(err))
 		return model.UsersResponseRegister{}, fiber.ErrInternalServerError
 	}
+
+	defaultCategory := []entity.Categories{
+		{
+			User_Id:    user.Id,
+			Name:       "Salary",
+			Type:       "income",
+			Created_at: time.Now(),
+		},
+		{
+			User_Id:    user.Id,
+			Name:       "food and beverage",
+			Type:       "expense",
+			Created_at: time.Now(),
+		},
+		{
+			User_Id:    user.Id,
+			Name:       "transport",
+			Type:       "expense",
+			Created_at: time.Now(),
+		},
+		{
+			User_Id:    user.Id,
+			Name:       "entertainment",
+			Type:       "expense",
+			Created_at: time.Now(),
+		},
+	}
+
+	if err := uc.CategoryRepo.AddDefaultCategory(tx, defaultCategory); err != nil {
+		uc.Log.Warn("failed to add default category", zap.Error(err))
+		return model.UsersResponseRegister{}, fiber.ErrInternalServerError
+	}
+
 	//commit
 	if err := tx.Commit(); err != nil {
 		uc.Log.Warn("failed to commit transaction", zap.Error(err))
@@ -91,12 +125,14 @@ func (uc *UserUsecase) Login(userRequest *model.UserLoginRequest) (model.UserLog
 	accessToken, err := utils.GenerateToken(stringUserId, "user", expAccessToken)
 	if err != nil {
 		uc.Log.Warn("failed to generate token", zap.Error(err))
+		return model.UserLoginResponse{}, fiber.ErrInternalServerError
 	}
 
 	exprefreshToken := 7 * 24 * time.Hour
 	refreshToken, err := utils.GenerateToken(stringUserId, "user", exprefreshToken)
 	if err != nil {
 		uc.Log.Warn("failed to generate token", zap.Error(err))
+		return model.UserLoginResponse{}, fiber.ErrInternalServerError
 	}
 
 	uc.ReddisClient.Set(context.Background(), "user_id_"+stringUserId, refreshToken, exprefreshToken)
@@ -107,7 +143,7 @@ func (uc *UserUsecase) Login(userRequest *model.UserLoginRequest) (model.UserLog
 
 	if err := tx.Commit(); err != nil {
 		uc.Log.Warn("failed to commit transaction", zap.Error(err))
-		return model.UserLoginResponse{}, err
+		return model.UserLoginResponse{}, fiber.ErrInternalServerError
 
 	}
 
