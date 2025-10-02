@@ -26,8 +26,11 @@ type AppConfig struct {
 
 func NewAppConfig(config *AppConfig) {
 	//	setup
+
+	categoryRepository := repository.NewCategoriesRepository()
+
 	userRepository := repository.NewUserRepository()
-	userUsecase := usecase.NewUserUsecase(config.DB, config.Log, config.Validate, config.Redis, userRepository)
+	userUsecase := usecase.NewUserUsecase(config.DB, config.Log, config.Validate, config.Redis, userRepository, categoryRepository)
 	userController := http.NewUserController(config.Log, userUsecase)
 
 	authMiddleware := middleware.NewAuth()

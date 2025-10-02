@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"strings"
 
 	"finenance-app/internal/utils"
@@ -30,8 +29,6 @@ func NewAuth() fiber.Handler {
 		if err != nil {
 			return fiber.ErrUnauthorized
 		}
-
-		fmt.Println(claims)
 
 		// Simpan claims ke context biar bisa dipakai di handler berikutnya
 		c.Locals("user", claims)

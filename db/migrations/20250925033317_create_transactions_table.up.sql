@@ -1,4 +1,4 @@
-CREATE TABLE transactions (
+    CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     category_id INT NOT NULL,

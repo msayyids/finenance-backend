@@ -113,6 +113,15 @@ func (uc *UserController) Logout(c fiber.Ctx) error {
 	// Clear cookie
 	c.ClearCookie("refresh_token")
 
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HTTPOnly: true,
+		Secure:   false,
+		SameSite: "Strict",
+	})
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"code":    fiber.StatusOK,
 		"message": "success logout",

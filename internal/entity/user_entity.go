@@ -7,7 +7,7 @@ type Users struct {
 	Name      string    `db:"name"`
 	Email     string    `db:"email"`
 	Password  string    `db:"password"`
-	Isverifed bool      `db:"isverifed"`
+	Isverifed bool      `db:"is_verifed"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 }

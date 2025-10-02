@@ -22,6 +22,26 @@ func (cr *CategoriesRepository) AddCategory(db *sqlx.Tx, category *entity.Catego
 	return nil
 }
 
+func (cr *CategoriesRepository) AddDefaultCategory(db *sqlx.Tx, categories []entity.Categories) error {
+	query := `INSERT INTO categories (user_id, name, type) 
+	          VALUES (:user_id, :name, :type) 
+	          RETURNING id, user_id, name, type, created_at`
+
+	for i := range categories {
+		stmt, err := db.PrepareNamed(query)
+		if err != nil {
+			return err
+		}
+
+		err = stmt.QueryRowx(categories[i]).StructScan(&categories[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (cr *CategoriesRepository) GetAllCategories(db *sqlx.Tx, userId int) (*[]entity.Categories, error) {
 	var categories []entity.Categories
 
@@ -47,5 +67,4 @@ func (cr *CategoriesRepository) GetCategoriesById(db *sqlx.Tx, userId int, id in
 	}
 
 	return &categories, nil
-
 }

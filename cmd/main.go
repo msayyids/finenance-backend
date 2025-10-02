@@ -13,15 +13,14 @@ func main() {
 	db := config.ConnectionDatabase(viperConfig, logger)
 	app := config.InitFiber()
 	validate := config.NewValidator()
-	reddis := config.NewReddisClient()
-
+	redis := config.NewReddisClient(viperConfig)
 	config.NewAppConfig(&config.AppConfig{
 		App:      app,
 		DB:       db,
 		Config:   viperConfig,
 		Log:      logger,
 		Validate: validate,
-		Redis:    reddis,
+		Redis:    redis,
 	})
 
 	err := app.Listen(fmt.Sprintf(":%s", viperConfig.GetString("APP_PORT")))
