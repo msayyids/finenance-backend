@@ -8,4 +8,5 @@ type Categories struct {
 	Name       string    `db:"name"`
 	Type       string    `db:"type"`
 	Created_at time.Time `db:"created_at"`
+	Updated_at time.Time `db:"updated_at"`
 }

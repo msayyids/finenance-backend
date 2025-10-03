@@ -28,6 +28,8 @@ func NewAppConfig(config *AppConfig) {
 	//	setup
 
 	categoryRepository := repository.NewCategoriesRepository()
+	categoryUsecase := usecase.NewCategoryUseCase(config.DB, config.Log, config.Validate, categoryRepository)
+	categoryController := http.NewCategoryController(config.Log, categoryUsecase)
 
 	userRepository := repository.NewUserRepository()
 	userUsecase := usecase.NewUserUsecase(config.DB, config.Log, config.Validate, config.Redis, userRepository, categoryRepository)
@@ -36,10 +38,11 @@ func NewAppConfig(config *AppConfig) {
 	authMiddleware := middleware.NewAuth()
 
 	routerconfig := route.RouteConfig{
-		Logger:         config.Log,
-		App:            config.App,
-		UserController: userController,
-		AuthMiddleware: authMiddleware,
+		Logger:             config.Log,
+		App:                config.App,
+		UserController:     userController,
+		CategoryController: categoryController,
+		AuthMiddleware:     authMiddleware,
 	}
 
 	routerconfig.SetupRouteConfig()

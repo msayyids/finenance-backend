@@ -47,7 +47,7 @@ func (cr *CategoriesRepository) GetAllCategories(db *sqlx.Tx, userId int) (*[]en
 
 	query := `SELECT * FROM categories WHERE user_id = $1`
 
-	err := db.QueryRowx(query, userId).StructScan(&categories)
+	err := db.Select(&categories, query, userId)
 	if err != nil {
 		return nil, err
 	}
