@@ -37,7 +37,7 @@ func NewAppConfig(config *AppConfig) {
 
 	authMiddleware := middleware.NewAuth()
 
-	routerconfig := route.RouteConfig{
+	routerConfig := route.RouteConfig{
 		Logger:             config.Log,
 		App:                config.App,
 		UserController:     userController,
@@ -45,5 +45,5 @@ func NewAppConfig(config *AppConfig) {
 		AuthMiddleware:     authMiddleware,
 	}
 
-	routerconfig.SetupRouteConfig()
+	routerConfig.SetupRouteConfig()
 }
