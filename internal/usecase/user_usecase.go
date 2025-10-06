@@ -124,14 +124,14 @@ func (uc *UserUsecase) Login(userRequest *model.UserLoginRequest) (model.UserLog
 
 	//create token jwt (implement reddis or not?)
 	expAccessToken := 15 * time.Minute
-	accessToken, err := utils.GenerateToken(stringUserId, "user", expAccessToken)
+	accessToken, err := utils.GenerateToken(stringUserId, expAccessToken)
 	if err != nil {
 		uc.Log.Warn("failed to generate token", zap.Error(err))
 		return model.UserLoginResponse{}, fiber.ErrInternalServerError
 	}
 
 	exprefreshToken := 7 * 24 * time.Hour
-	refreshToken, err := utils.GenerateToken(stringUserId, "user", exprefreshToken)
+	refreshToken, err := utils.GenerateToken(stringUserId, exprefreshToken)
 	if err != nil {
 		uc.Log.Warn("failed to generate token", zap.Error(err))
 		return model.UserLoginResponse{}, fiber.ErrInternalServerError
@@ -190,7 +190,7 @@ func (uc *UserUsecase) RefreshToken(refreshToken string, user_id int) (string, e
 	stringUserId := strconv.Itoa(user.Id)
 
 	// generate access token baru
-	newAccessToken, err := utils.GenerateToken(stringUserId, "user", 15*time.Minute)
+	newAccessToken, err := utils.GenerateToken(stringUserId, 15*time.Minute)
 	if err != nil {
 		uc.Log.Error("failed to generate new access token", zap.Error(err))
 		return "", err

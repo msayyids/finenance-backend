@@ -9,16 +9,16 @@ import (
 	"github.com/spf13/viper"
 )
 
-func GenerateToken(userId string, role string, expiredTime time.Duration) (string, error) {
+func GenerateToken(userId string, expiredTime time.Duration) (string, error) {
 
 	// Create the Claims
 	claims := entity.CustomClaims{
 		UserID: userId,
-		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    "finenance-backend",
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiredTime)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			Subject:   "123",
+			NotBefore: jwt.NewNumericDate(time.Now()),
 		},
 	}
 

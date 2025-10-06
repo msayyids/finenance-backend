@@ -3,6 +3,7 @@ package repository
 import (
 	"finenance-app/internal/entity"
 	"finenance-app/internal/model"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -19,20 +20,14 @@ func (cr *CategoriesRepository) AddCategory(db *sqlx.Tx, user_id int, request *m
 }
 
 func (cr *CategoriesRepository) AddDefaultCategory(db *sqlx.Tx, categories []entity.Categories) error {
-	query := `INSERT INTO categories (user_id, name, type) 
-	          VALUES ($1, $2, $3) 
-	          RETURNING id, user_id, name, type, created_at`
+	query := `
+INSERT INTO categories (user_id, name, type)
+VALUES (:user_id, :name, :type)
+`
 
-	for i := range categories {
-		stmt, err := db.PrepareNamed(query)
-		if err != nil {
-			return err
-		}
-
-		err = stmt.QueryRowx(categories[i]).StructScan(&categories[i])
-		if err != nil {
-			return err
-		}
+	_, err := db.NamedExec(query, categories)
+	if err != nil {
+		return fmt.Errorf("failed to insert categories: %w", err)
 	}
 
 	return nil
