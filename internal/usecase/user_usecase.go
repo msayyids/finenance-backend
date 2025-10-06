@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"finenance-app/internal/entity"
 	"finenance-app/internal/model"
 	"finenance-app/internal/utils"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -122,14 +124,14 @@ func (uc *UserUsecase) Login(userRequest *model.UserLoginRequest) (model.UserLog
 
 	//create token jwt (implement reddis or not?)
 	expAccessToken := 15 * time.Minute
-	accessToken, err := utils.GenerateToken(stringUserId, "user", expAccessToken)
+	accessToken, err := utils.GenerateToken(stringUserId, expAccessToken)
 	if err != nil {
 		uc.Log.Warn("failed to generate token", zap.Error(err))
 		return model.UserLoginResponse{}, fiber.ErrInternalServerError
 	}
 
 	exprefreshToken := 7 * 24 * time.Hour
-	refreshToken, err := utils.GenerateToken(stringUserId, "user", exprefreshToken)
+	refreshToken, err := utils.GenerateToken(stringUserId, exprefreshToken)
 	if err != nil {
 		uc.Log.Warn("failed to generate token", zap.Error(err))
 		return model.UserLoginResponse{}, fiber.ErrInternalServerError
@@ -152,6 +154,55 @@ func (uc *UserUsecase) Login(userRequest *model.UserLoginRequest) (model.UserLog
 	}
 
 	return response, nil
+}
+
+func (uc *UserUsecase) RefreshToken(refreshToken string, user_id int) (string, error) {
+	tx, err := uc.DB.Beginx()
+	if err != nil {
+		uc.Log.Error("failed to create transaction", zap.Error(err))
+		return "", err
+	}
+	defer tx.Rollback()
+
+	// cek user
+	user, err := uc.UserRepo.FindUserById(tx, user_id)
+	if err != nil {
+		uc.Log.Warn("failed to find user by id", zap.Error(err))
+		return "", err
+	}
+
+	// cek refresh token di Redis
+	key := "user_id_" + strconv.Itoa(user.Id)
+	storedToken, err := uc.ReddisClient.Get(context.Background(), key).Result()
+	if err == redis.Nil {
+		uc.Log.Warn("refresh token not found in redis")
+		return "", errors.New("refresh token not found")
+	} else if err != nil {
+		uc.Log.Error("failed to get refresh token from redis", zap.Error(err))
+		return "", err
+	}
+
+	// validasi token
+	if storedToken != refreshToken {
+		uc.Log.Warn("refresh token mismatch")
+		return "", errors.New("invalid refresh token")
+	}
+	stringUserId := strconv.Itoa(user.Id)
+
+	// generate access token baru
+	newAccessToken, err := utils.GenerateToken(stringUserId, 15*time.Minute)
+	if err != nil {
+		uc.Log.Error("failed to generate new access token", zap.Error(err))
+		return "", err
+	}
+
+	// commit transaksi
+	if err := tx.Commit(); err != nil {
+		uc.Log.Error("failed to commit", zap.Error(err))
+		return "", err
+	}
+
+	return newAccessToken, nil
 }
 
 func (uc *UserUsecase) Logout(refreshToken string) error {
@@ -231,7 +282,3 @@ func (uc *UserUsecase) GetProfile(userId string) (model.UserGetProfileResponse, 
 
 	return getProfile, nil
 }
-
-//func (uc *UserUsecase) Logout(userId string) error {
-//
-//}

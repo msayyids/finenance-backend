@@ -2,19 +2,16 @@ package repository
 
 import (
 	"finenance-app/internal/entity"
+	"finenance-app/internal/model"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
 
-func (cr *CategoriesRepository) AddCategory(db *sqlx.Tx, category *entity.Categories) error {
-	query := `INSERT INTO categories (user_id, name,type) VALUES ($1, $2, $3) RETURNING id, created_at`
+func (cr *CategoriesRepository) AddCategory(db *sqlx.Tx, user_id int, request *model.CategoryRequest) error {
+	query := `INSERT INTO categories (user_id, name,type) VALUES ($1, $2, $3)`
 
-	stmt, err := db.PrepareNamed(query)
-	if err != nil {
-		return err
-	}
-
-	err = stmt.QueryRowx(category).StructScan(category)
+	_, err := db.Exec(query, user_id, request.Name, request.Type)
 	if err != nil {
 		return err
 	}
@@ -23,20 +20,14 @@ func (cr *CategoriesRepository) AddCategory(db *sqlx.Tx, category *entity.Catego
 }
 
 func (cr *CategoriesRepository) AddDefaultCategory(db *sqlx.Tx, categories []entity.Categories) error {
-	query := `INSERT INTO categories (user_id, name, type) 
-	          VALUES (:user_id, :name, :type) 
-	          RETURNING id, user_id, name, type, created_at`
+	query := `
+INSERT INTO categories (user_id, name, type)
+VALUES (:user_id, :name, :type)
+`
 
-	for i := range categories {
-		stmt, err := db.PrepareNamed(query)
-		if err != nil {
-			return err
-		}
-
-		err = stmt.QueryRowx(categories[i]).StructScan(&categories[i])
-		if err != nil {
-			return err
-		}
+	_, err := db.NamedExec(query, categories)
+	if err != nil {
+		return fmt.Errorf("failed to insert categories: %w", err)
 	}
 
 	return nil
@@ -47,7 +38,7 @@ func (cr *CategoriesRepository) GetAllCategories(db *sqlx.Tx, userId int) (*[]en
 
 	query := `SELECT * FROM categories WHERE user_id = $1`
 
-	err := db.QueryRowx(query, userId).StructScan(&categories)
+	err := db.Select(&categories, query, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +50,7 @@ func (cr *CategoriesRepository) GetAllCategories(db *sqlx.Tx, userId int) (*[]en
 func (cr *CategoriesRepository) GetCategoriesById(db *sqlx.Tx, userId int, id int) (*entity.Categories, error) {
 	var categories entity.Categories
 
-	query := `SELECT * FROM categories WHERE user_id = :$1 and id = :$2`
+	query := `SELECT * FROM categories WHERE user_id = $1 and id = $2`
 
 	err := db.QueryRowx(query, userId, id).StructScan(&categories)
 	if err != nil {
@@ -67,4 +58,20 @@ func (cr *CategoriesRepository) GetCategoriesById(db *sqlx.Tx, userId int, id in
 	}
 
 	return &categories, nil
+}
+
+func (cr *CategoriesRepository) UpdateCategoryById(db *sqlx.Tx, id, user_id int, request *model.CategoryRequest) (*entity.Categories, error) {
+
+	query := `UPDATE categories 
+	SET name  = COALESCE(NULLIF($1, ''), name), type = COALESCE(NULLIF($2, ''), type), updated_at   = now()
+    WHERE id = $3 and user_id = $4
+	RETURNING id, user_id, name, type, created_at, updated_at;
+`
+	var updatedCategory entity.Categories
+	err := db.QueryRowx(query, request.Name, request.Type, id, user_id).StructScan(&updatedCategory)
+	if err != nil {
+		return nil, err
+	}
+
+	return &updatedCategory, nil
 }
