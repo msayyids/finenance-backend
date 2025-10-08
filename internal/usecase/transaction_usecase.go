@@ -71,3 +71,24 @@ func (tc *TransactionUseCase) GetAllTransactions(user_id int) ([]entity.Transact
 
 	return allTransaction, nil
 }
+
+func (tc *TransactionUseCase) GeTransactionById(transactionId, user_id int) (*entity.Transaction, error) {
+	tx, err := tc.DB.Beginx()
+	if err != nil {
+		tc.Log.Error("failed to create transaction db")
+		return nil, errors.New("failed to create transaction")
+	}
+	defer tx.Rollback()
+	transaction, err := tc.TransactionRepo.FindTransactionById(tx, transactionId, user_id)
+	if err != nil {
+		tc.Log.Error("failed to find transaction", zap.Error(err))
+		return nil, errors.New("failed to find transaction")
+	}
+	err = tx.Commit()
+	if err != nil {
+		tc.Log.Error("failed to commit", zap.Error(err))
+		return nil, errors.New("failed to commit")
+	}
+	return transaction, nil
+
+}
