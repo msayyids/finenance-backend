@@ -36,8 +36,8 @@ func NewAppConfig(config *AppConfig) {
 	userController := http.NewUserController(config.Log, userUsecase)
 
 	transactionRepository := repository.NewTransactionRepository()
-	transactionUseCase := usecase.NewTransactionUseCase(config.DB, config.Log, config.Validate, transactionRepository)
-	transactionController := http.NewTransactionController(config.Log, transactionUseCase)
+	transactionUsecase := usecase.NewTransactionUseCase(config.DB, config.Log, config.Validate, transactionRepository)
+	transactionController := http.NewTransactionController(config.Log, transactionUsecase)
 
 	authMiddleware := middleware.NewAuth()
 

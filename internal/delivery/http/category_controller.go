@@ -126,26 +126,3 @@ func (cc *CategoryController) UpdateCategoryById(c fiber.Ctx) error {
 		Data:    category,
 	})
 }
-
-func (cc *CategoryController) DeleteCategoryById(c fiber.Ctx) error {
-	user := c.Locals("user").(*entity.CustomClaims)
-	userIdint, err := strconv.Atoi(user.UserID)
-	if err != nil {
-		cc.Log.Error("failed to get id", zap.Error(err))
-		return fiber.ErrBadRequest
-	}
-	categoryId, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		cc.Log.Error("failed to get id", zap.Error(err))
-		return fiber.ErrBadRequest
-	}
-	err = cc.CategoryUsecase.DeleteCategoryById(categoryId, userIdint)
-	if err != nil {
-		cc.Log.Error("failed to delete category", zap.Error(err))
-		return fiber.ErrInternalServerError
-	}
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"code":    fiber.StatusOK,
-		"message": "delete category successfully",
-	})
-}

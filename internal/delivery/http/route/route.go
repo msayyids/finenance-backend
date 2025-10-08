@@ -24,20 +24,17 @@ func (c *RouteConfig) SetupRouteConfig() {
 }
 
 func (c *RouteConfig) SetupGlobalRoute() {
-	c.App.Post("finenance/signup", c.UserController.Register)
-	c.App.Post("finenance/login", c.UserController.Login)
+	c.App.Post("/finenance/signup", c.UserController.Register)
+	c.App.Post("/finenance/login", c.UserController.Login)
 }
 
 func (c *RouteConfig) SetupAuthRoute() {
 	c.App.Use(middleware.NewAuth())
-	c.App.Get("finenance/user", c.UserController.GetProfile)
+	c.App.Get("/finenance/user", c.UserController.GetProfile)
 	c.App.Delete("/finenance/logout", c.UserController.Logout)
 
-	c.App.Post("finenance/category", c.CategoryController.CreateNewCategory)
+	c.App.Post("/finenance/category", c.CategoryController.CreateNewCategory)
 	c.App.Get("finenance/category", c.CategoryController.GetAllUserCategory)
 	c.App.Get("finenance/category/:id", c.CategoryController.GetCategoryById)
 	c.App.Patch("finenance/category/:id", c.CategoryController.UpdateCategoryById)
-	c.App.Delete("finenance/category/:id", c.CategoryController.DeleteCategoryById)
-
-	c.App.Post("finenance/transaction", c.TransactionController.CreateNewTransaction)
 }
