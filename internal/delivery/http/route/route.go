@@ -38,5 +38,7 @@ func (c *RouteConfig) SetupAuthRoute() {
 	c.App.Get("finenance/category/:id", c.CategoryController.GetCategoryById)
 	c.App.Patch("finenance/category/:id", c.CategoryController.UpdateCategoryById)
 
+	c.App.Post("finenance/transaction", c.TransactionController.CreateNewTransaction)
 	c.App.Get("finenance/transaction/", c.TransactionController.GetAllTransactions)
+	c.App.Get("finenance/transaction/:id", c.TransactionController.GetTransactionById)
 }

@@ -34,17 +34,15 @@ func (tr *TransactionRepository) FindAllTransactions(db *sqlx.Tx, user_id int) (
 	return transactions, nil
 }
 
-//func (tr *TransactiomRepository) FindTransactionById(db *sqlx.DB, transactionId int) (*entity.Transaction, error) {
-//
-//	query := `SELECT * FROM transactions WHERE id = $1`
-//
-//	var transaction entity.Transaction
-//
-//	query := `insert into transactions (user_id, category_id,amount,note,created_at,updated_at) values ($1, $2, $3, $4, $5,$6)`
-//
-//	_, err := db.Exec(query, transaction.UserId, transaction.CategoryId, transaction.Amount, transaction.Note, transaction.CreateAt, transaction.UpdateAt)
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//}
+func (tr *TransactionRepository) FindTransactionById(db *sqlx.Tx, transactionId, user_id int) (*entity.Transaction, error) {
+
+	query := `SELECT * FROM transactions WHERE id = $1 and user_id = $2`
+
+	var transaction entity.Transaction
+
+	err := db.Get(&transaction, query, transactionId, user_id)
+	if err != nil {
+		return nil, err
+	}
+	return &transaction, nil
+}
