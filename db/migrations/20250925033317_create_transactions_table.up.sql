@@ -2,7 +2,7 @@
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     category_id INT NOT NULL,
-    amount NUMERIC(12,2) NOT NULL,
+    amount INT NOT NULL,
     note TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

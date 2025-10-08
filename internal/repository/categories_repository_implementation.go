@@ -15,6 +15,7 @@ type CategoriesRepositoryImplementation interface {
 	AddDefaultCategory(db *sqlx.Tx, categories []entity.Categories) error
 	GetCategoriesById(db *sqlx.Tx, userId int, id int) (*entity.Categories, error)
 	UpdateCategoryById(db *sqlx.Tx, id, user_id int, request *model.CategoryRequest) (*entity.Categories, error)
+	DeleteCategoryById(db *sqlx.Tx, id, user_id int) error
 }
 
 func NewCategoriesRepository() CategoriesRepositoryImplementation {

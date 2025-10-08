@@ -111,3 +111,22 @@ func (cc *CategoryUsecase) UpdateCategoryById(id, user_id int, request *model.Ca
 
 	return updatedCategory, nil
 }
+
+func (cc *CategoryUsecase) DeleteCategoryById(id, user_id int) error {
+	tx, err := cc.DB.Beginx()
+	if err != nil {
+		cc.Log.Error("failed to create transaction", zap.Error(err))
+		return errors.New("failed to create transaction")
+	}
+	defer tx.Rollback()
+	if err := cc.CategoryRepo.DeleteCategoryById(tx, id, user_id); err != nil {
+		cc.Log.Error("failed to delete category", zap.Error(err))
+		return errors.New("failed to delete category")
+	}
+
+	if err := tx.Commit(); err != nil {
+		cc.Log.Error("failed to commit", zap.Error(err))
+		return errors.New("failed to commit")
+	}
+	return nil
+}
