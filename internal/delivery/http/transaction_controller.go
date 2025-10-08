@@ -17,6 +17,7 @@ type TransactionController struct {
 
 type TransactionControllerImpl interface {
 	CreateNewTransaction(c fiber.Ctx) error
+	GetAllTransactions(c fiber.Ctx) error
 }
 
 func NewTransactionController(log *zap.Logger, transactionUseCase usecase.TransactionUseCaseImpl) TransactionControllerImpl {
@@ -47,4 +48,19 @@ func (tc *TransactionController) CreateNewTransaction(c fiber.Ctx) error {
 		"message": "Transaction created successfully",
 	})
 
+}
+
+func (tc *TransactionController) GetAllTransactions(c fiber.Ctx) error {
+	user := c.Locals("user").(*entity.CustomClaims)
+	intId, _ := strconv.Atoi(user.UserID)
+	transactions, err := tc.TransactionUseCase.GetAllTransactions(intId)
+	if err != nil {
+		tc.Log.Error("Failed to get all transactions : %+v", zap.Error(err))
+		return fiber.ErrInternalServerError
+	}
+	return c.Status(fiber.StatusOK).JSON(model.WebResponse[[]entity.Transaction]{
+		Code:    fiber.StatusOK,
+		Message: "Transactions retrieved successfully",
+		Data:    transactions,
+	})
 }

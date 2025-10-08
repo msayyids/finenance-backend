@@ -20,7 +20,6 @@ type CategoryControllerImplementation interface {
 	GetAllUserCategory(c fiber.Ctx) error
 	GetCategoryById(c fiber.Ctx) error
 	UpdateCategoryById(c fiber.Ctx) error
-	DeleteCategoryById(c fiber.Ctx) error
 }
 
 func NewCategoryController(log *zap.Logger, uc usecase.CategoryUsecaseImplementation) CategoryControllerImplementation {
