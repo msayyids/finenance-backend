@@ -13,7 +13,7 @@ type RouteConfig struct {
 	App                   *fiber.App
 	UserController        http.UserControllerImplementation
 	CategoryController    http.CategoryControllerImplementation
-	TransactionController http.TransactionControllerImplementation
+	TransactionController http.TransactionControllerImpl
 	AuthMiddleware        fiber.Handler
 }
 
@@ -37,5 +37,4 @@ func (c *RouteConfig) SetupAuthRoute() {
 	c.App.Get("finenance/category", c.CategoryController.GetAllUserCategory)
 	c.App.Get("finenance/category/:id", c.CategoryController.GetCategoryById)
 	c.App.Patch("finenance/category/:id", c.CategoryController.UpdateCategoryById)
-	c.App.Delete("finenance/category/:id", c.CategoryController.DeleteCategoryById)
 }

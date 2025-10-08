@@ -22,7 +22,7 @@ type CategoryUsecaseImplementation interface {
 	GetCategoryById(user_id, id int) (*entity.Categories, error)
 	UpdateCategoryById(id, user_id int, request *model.CategoryRequest) (*entity.Categories, error)
 	CreateNewCategory(user_id int, request *model.CategoryRequest) error
-	DeleteCategoryById(id, user_id int) error
+	DeleteCategoryById(user_id, id int) error
 }
 
 func NewCategoryUseCase(db *sqlx.DB, log *zap.Logger, Validator *validator.Validate, cr repository.CategoriesRepositoryImplementation) CategoryUsecaseImplementation {
