@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"finenance-app/internal/entity"
 	"finenance-app/internal/model"
 	"finenance-app/internal/repository"
 
@@ -18,6 +19,7 @@ type TransactionUseCase struct {
 
 type TransactionUseCaseImpl interface {
 	CreateTransaction(user_id int, request *model.TransactionRequest) error
+	GetAllTransactions(user_id int) ([]entity.Transaction, error)
 }
 
 func NewTransactionUseCase(db *sqlx.DB, log *zap.Logger, Validator *validator.Validate, tr repository.TransactionRepositoryImpl) TransactionUseCaseImpl {

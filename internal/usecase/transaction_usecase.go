@@ -27,7 +27,7 @@ func (tc *TransactionUseCase) CreateTransaction(user_id int, request *model.Tran
 
 	transaction := entity.Transaction{
 		UserId:     user_id,
-		Amount:     request.Amount,
+		Amount:     float64(request.Amount),
 		CategoryId: request.CategoryId,
 		Note:       request.Note,
 		CreateAt:   time.Now(),
@@ -46,4 +46,28 @@ func (tc *TransactionUseCase) CreateTransaction(user_id int, request *model.Tran
 		return errors.New("failed to commit")
 	}
 	return nil
+}
+
+func (tc *TransactionUseCase) GetAllTransactions(user_id int) ([]entity.Transaction, error) {
+	tx, err := tc.DB.Beginx()
+	if err != nil {
+		tc.Log.Error("failed to create transaction db")
+		return nil, errors.New("failed to create transaction")
+
+	}
+
+	defer tx.Rollback()
+
+	allTransaction, err := tc.TransactionRepo.FindAllTransactions(tx, user_id)
+	if err != nil {
+		tc.Log.Error("failed to find all transactions", zap.Error(err))
+		return nil, errors.New("failed to find all transactions")
+	}
+	err = tx.Commit()
+	if err != nil {
+		tc.Log.Error("failed to commit", zap.Error(err))
+		return nil, errors.New("failed to commit")
+	}
+
+	return allTransaction, nil
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func (tr *TransactiomRepository) AddTransaction(db *sqlx.Tx, transaction *entity.Transaction) error {
+func (tr *TransactionRepository) AddTransaction(db *sqlx.Tx, transaction *entity.Transaction) error {
 
 	query := `
 		INSERT INTO transactions (user_id, category_id, amount, note, created_at, updated_at)
@@ -21,17 +21,17 @@ func (tr *TransactiomRepository) AddTransaction(db *sqlx.Tx, transaction *entity
 	return nil
 }
 
-func (tr *TransactiomRepository) FindAllTransactions(db *sqlx.DB, transaction *entity.Transaction) (*[]entity.Transaction, error) {
+func (tr *TransactionRepository) FindAllTransactions(db *sqlx.Tx, user_id int) ([]entity.Transaction, error) {
 	query := `SELECT * FROM transactions WHERE user_id = $1 ORDER BY created_at DESC`
 
 	var transactions []entity.Transaction
 
-	err := db.Select(&transactions, query, transaction.UserId)
+	err := db.Select(&transactions, query, user_id)
 	if err != nil {
 		return nil, err
 	}
 
-	return &transactions, nil
+	return transactions, nil
 }
 
 //func (tr *TransactiomRepository) FindTransactionById(db *sqlx.DB, transactionId int) (*entity.Transaction, error) {
