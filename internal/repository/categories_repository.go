@@ -75,3 +75,12 @@ func (cr *CategoriesRepository) UpdateCategoryById(db *sqlx.Tx, id, user_id int,
 
 	return &updatedCategory, nil
 }
+
+func (cr *CategoriesRepository) DeleteCategoryById(db *sqlx.Tx, id, user_id int) error {
+	query := `DELETE FROM categories WHERE id = $1 and user_id = $2`
+	_, err := db.Exec(query, id, user_id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
