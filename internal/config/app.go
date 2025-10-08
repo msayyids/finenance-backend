@@ -35,14 +35,19 @@ func NewAppConfig(config *AppConfig) {
 	userUsecase := usecase.NewUserUsecase(config.DB, config.Log, config.Validate, config.Redis, userRepository, categoryRepository)
 	userController := http.NewUserController(config.Log, userUsecase)
 
+	transactionRepository := repository.NewTransactionRepository()
+	transactionUseCase := usecase.NewTransactionUseCase(config.DB, config.Log, config.Validate, transactionRepository)
+	transactionController := http.NewTransactionController(config.Log, transactionUseCase)
+
 	authMiddleware := middleware.NewAuth()
 
 	routerConfig := route.RouteConfig{
-		Logger:             config.Log,
-		App:                config.App,
-		UserController:     userController,
-		CategoryController: categoryController,
-		AuthMiddleware:     authMiddleware,
+		Logger:                config.Log,
+		App:                   config.App,
+		UserController:        userController,
+		CategoryController:    categoryController,
+		TransactionController: transactionController,
+		AuthMiddleware:        authMiddleware,
 	}
 
 	routerConfig.SetupRouteConfig()

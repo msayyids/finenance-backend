@@ -1,0 +1,30 @@
+package usecase
+
+import (
+	"finenance-app/internal/model"
+	"finenance-app/internal/repository"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/jmoiron/sqlx"
+	"go.uber.org/zap"
+)
+
+type TransactionUseCase struct {
+	DB              *sqlx.DB
+	Log             *zap.Logger
+	Validator       *validator.Validate
+	TransactionRepo repository.TransactionRepositoryImpl
+}
+
+type TransactionUseCaseImpl interface {
+	CreateTransaction(user_id int, request *model.TransactionRequest) error
+}
+
+func NewTransactionUseCase(db *sqlx.DB, log *zap.Logger, Validator *validator.Validate, tr repository.TransactionRepositoryImpl) TransactionUseCaseImpl {
+	return &TransactionUseCase{
+		DB:              db,
+		Log:             log,
+		Validator:       Validator,
+		TransactionRepo: tr,
+	}
+}

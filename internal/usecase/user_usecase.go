@@ -123,7 +123,7 @@ func (uc *UserUsecase) Login(userRequest *model.UserLoginRequest) (model.UserLog
 	stringUserId := strconv.Itoa(user.Id)
 
 	//create token jwt (implement reddis or not?)
-	expAccessToken := 15 * time.Minute
+	expAccessToken := 60 * time.Minute
 	accessToken, err := utils.GenerateToken(stringUserId, expAccessToken)
 	if err != nil {
 		uc.Log.Warn("failed to generate token", zap.Error(err))
