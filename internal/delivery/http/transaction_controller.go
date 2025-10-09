@@ -20,6 +20,7 @@ type TransactionControllerImpl interface {
 	GetAllTransactions(c fiber.Ctx) error
 	GetTransactionById(c fiber.Ctx) error
 	UpdateTransactionById(c fiber.Ctx) error
+	DeleteTransactionById(c fiber.Ctx) error
 }
 
 func NewTransactionController(log *zap.Logger, transactionUseCase usecase.TransactionUseCaseImpl) TransactionControllerImpl {
@@ -104,5 +105,22 @@ func (tc *TransactionController) UpdateTransactionById(c fiber.Ctx) error {
 		Code:    fiber.StatusOK,
 		Message: "Transaction updated successfully",
 		Data:    transaction,
+	})
+}
+
+func (tc *TransactionController) DeleteTransactionById(c fiber.Ctx) error {
+	user := c.Locals("user").(*entity.CustomClaims)
+	intId, _ := strconv.Atoi(user.UserID)
+	transactionId, _ := strconv.Atoi(c.Params("id"))
+
+	err := tc.TransactionUseCase.DeleteTransactionById(transactionId, intId)
+	if err != nil {
+		tc.Log.Error("Failed to delete transaction : %+v", zap.Error(err))
+		return fiber.ErrInternalServerError
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"code":    fiber.StatusOK,
+		"message": "Transaction deleted successfully",
 	})
 }

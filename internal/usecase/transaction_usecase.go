@@ -121,3 +121,26 @@ func (tc *TransactionUseCase) UpdateTransactionById(id, user_id int, reqTransact
 	}
 	return transaction, nil
 }
+
+func (tc *TransactionUseCase) DeleteTransactionById(id, user_id int) error {
+	tx, err := tc.DB.Beginx()
+	if err != nil {
+		tc.Log.Error("failed to create transaction db", zap.Error(err))
+		return errors.New("failed to create transaction")
+	}
+
+	defer tx.Rollback()
+
+	err = tc.TransactionRepo.DeleteTransactionById(tx, id, user_id)
+	if err != nil {
+		tc.Log.Error("failed to delete transaction", zap.Error(err))
+		return errors.New("failed to delete transaction")
+	}
+	err = tx.Commit()
+	if err != nil {
+		tc.Log.Error("failed to commit", zap.Error(err))
+		return errors.New("failed to commit")
+	}
+	return nil
+
+}

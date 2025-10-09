@@ -67,3 +67,12 @@ RETURNING *;
 	return &transaction, nil
 
 }
+
+func (tr *TransactionRepository) DeleteTransactionById(db *sqlx.Tx, id, user_id int) error {
+	query := `DELETE FROM transactions WHERE id = $1 AND user_id = $2`
+	_, err := db.Exec(query, id, user_id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

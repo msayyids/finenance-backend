@@ -14,6 +14,7 @@ type TransactionRepositoryImpl interface {
 	FindAllTransactions(db *sqlx.Tx, user_id int) ([]entity.Transaction, error)
 	FindTransactionById(db *sqlx.Tx, transactionId, user_id int) (*entity.Transaction, error)
 	UpdateTransactionById(db *sqlx.Tx, id, user_id int, reqTransaction *model.TransactionRequest) (*entity.Transaction, error)
+	DeleteTransactionById(db *sqlx.Tx, id, user_id int) error
 }
 
 func NewTransactionRepository() TransactionRepositoryImpl {

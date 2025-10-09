@@ -42,4 +42,5 @@ func (c *RouteConfig) SetupAuthRoute() {
 	c.App.Get("finenance/transaction/", c.TransactionController.GetAllTransactions)
 	c.App.Get("finenance/transaction/:id", c.TransactionController.GetTransactionById)
 	c.App.Patch("finenance/transaction/:id", c.TransactionController.UpdateTransactionById)
+	c.App.Delete("finenance/transaction/:id", c.TransactionController.DeleteTransactionById)
 }
