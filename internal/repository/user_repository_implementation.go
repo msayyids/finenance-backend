@@ -12,9 +12,6 @@ type UserRepositoryImplementation interface {
 	AddUser(db *sqlx.Tx, user *entity.Users) error
 	FindUserById(db *sqlx.Tx, userid int) (*entity.Users, error)
 	FindUserByEmail(db *sqlx.Tx, email string) (*entity.Users, error)
-	UpdateUser() error
-	DeleteUser() error
-	FindRole() error
 }
 
 func NewUserRepository() UserRepositoryImplementation {

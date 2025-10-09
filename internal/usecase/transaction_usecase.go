@@ -27,9 +27,9 @@ func (tc *TransactionUseCase) CreateTransaction(user_id int, request *model.Tran
 
 	transaction := entity.Transaction{
 		UserId:     user_id,
-		Amount:     float64(request.Amount),
-		CategoryId: request.CategoryId,
-		Note:       request.Note,
+		Amount:     float64(*request.Amount),
+		CategoryId: *request.CategoryId,
+		Note:       *request.Note,
 		CreateAt:   time.Now(),
 		UpdateAt:   time.Now(),
 	}
@@ -90,5 +90,57 @@ func (tc *TransactionUseCase) GeTransactionById(transactionId, user_id int) (*en
 		return nil, errors.New("failed to commit")
 	}
 	return transaction, nil
+
+}
+
+func (tc *TransactionUseCase) UpdateTransactionById(id, user_id int, reqTransaction *model.TransactionRequest) (*entity.Transaction, error) {
+
+	tx, err := tc.DB.Beginx()
+	if err != nil {
+		tc.Log.Error("failed to create transaction db", zap.Error(err))
+		return nil, errors.New("failed to create transaction")
+	}
+
+	defer tx.Rollback()
+
+	if err := tc.Validator.Struct(reqTransaction); err != nil {
+		tc.Log.Warn("invalid user request", zap.Error(err))
+		return nil, errors.New("invalid user request")
+	}
+
+	transaction, err := tc.TransactionRepo.UpdateTransactionById(tx, id, user_id, reqTransaction)
+	if err != nil {
+		tc.Log.Error("failed to update transaction", zap.Error(err))
+		return nil, errors.New("failed to update transaction")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		tc.Log.Error("failed to commit", zap.Error(err))
+		return nil, errors.New("failed to commit")
+	}
+	return transaction, nil
+}
+
+func (tc *TransactionUseCase) DeleteTransactionById(id, user_id int) error {
+	tx, err := tc.DB.Beginx()
+	if err != nil {
+		tc.Log.Error("failed to create transaction db", zap.Error(err))
+		return errors.New("failed to create transaction")
+	}
+
+	defer tx.Rollback()
+
+	err = tc.TransactionRepo.DeleteTransactionById(tx, id, user_id)
+	if err != nil {
+		tc.Log.Error("failed to delete transaction", zap.Error(err))
+		return errors.New("failed to delete transaction")
+	}
+	err = tx.Commit()
+	if err != nil {
+		tc.Log.Error("failed to commit", zap.Error(err))
+		return errors.New("failed to commit")
+	}
+	return nil
 
 }

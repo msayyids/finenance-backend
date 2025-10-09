@@ -2,6 +2,7 @@ package repository
 
 import (
 	"finenance-app/internal/entity"
+	"finenance-app/internal/model"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -45,4 +46,33 @@ func (tr *TransactionRepository) FindTransactionById(db *sqlx.Tx, transactionId,
 		return nil, err
 	}
 	return &transaction, nil
+}
+
+func (tr *TransactionRepository) UpdateTransactionById(db *sqlx.Tx, id, user_id int, reqTransaction *model.TransactionRequest) (*entity.Transaction, error) {
+	query := `UPDATE transactions
+SET 
+	category_id = COALESCE(NULLIF($1, 0), category_id),
+	amount      = COALESCE(NULLIF($2, 0), amount),
+	note        = COALESCE(NULLIF($3, ''), note),
+	updated_at  = now()
+WHERE id = $4 AND user_id = $5
+RETURNING *;
+`
+
+	var transaction entity.Transaction
+	err := db.QueryRowx(query, reqTransaction.CategoryId, reqTransaction.Amount, reqTransaction.Note, id, user_id).StructScan(&transaction)
+	if err != nil {
+		return nil, err
+	}
+	return &transaction, nil
+
+}
+
+func (tr *TransactionRepository) DeleteTransactionById(db *sqlx.Tx, id, user_id int) error {
+	query := `DELETE FROM transactions WHERE id = $1 AND user_id = $2`
+	_, err := db.Exec(query, id, user_id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
