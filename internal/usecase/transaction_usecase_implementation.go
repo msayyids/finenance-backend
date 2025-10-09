@@ -21,6 +21,7 @@ type TransactionUseCaseImpl interface {
 	CreateTransaction(user_id int, request *model.TransactionRequest) error
 	GetAllTransactions(user_id int) ([]entity.Transaction, error)
 	GeTransactionById(transactionId, user_id int) (*entity.Transaction, error)
+	UpdateTransactionById(id, user_id int, reqTransaction *model.TransactionRequest) (*entity.Transaction, error)
 }
 
 func NewTransactionUseCase(db *sqlx.DB, log *zap.Logger, Validator *validator.Validate, tr repository.TransactionRepositoryImpl) TransactionUseCaseImpl {

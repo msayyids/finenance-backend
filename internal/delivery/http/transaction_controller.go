@@ -19,6 +19,7 @@ type TransactionControllerImpl interface {
 	CreateNewTransaction(c fiber.Ctx) error
 	GetAllTransactions(c fiber.Ctx) error
 	GetTransactionById(c fiber.Ctx) error
+	UpdateTransactionById(c fiber.Ctx) error
 }
 
 func NewTransactionController(log *zap.Logger, transactionUseCase usecase.TransactionUseCaseImpl) TransactionControllerImpl {
@@ -79,6 +80,29 @@ func (tc *TransactionController) GetTransactionById(c fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(model.WebResponse[*entity.Transaction]{
 		Code:    fiber.StatusOK,
 		Message: "Transaction retrieved successfully",
+		Data:    transaction,
+	})
+}
+
+func (tc *TransactionController) UpdateTransactionById(c fiber.Ctx) error {
+	user := c.Locals("user").(*entity.CustomClaims)
+	intId, _ := strconv.Atoi(user.UserID)
+	transactionId, _ := strconv.Atoi(c.Params("id"))
+	request := new(model.TransactionRequest)
+	if err := c.Bind().Body(request); err != nil {
+		tc.Log.Error("Failed to parse request body : %+v", zap.Error(err))
+		return fiber.ErrBadRequest
+	}
+
+	transaction, err := tc.TransactionUseCase.UpdateTransactionById(transactionId, intId, request)
+	if err != nil {
+		tc.Log.Error("Failed to update transaction : %+v", zap.Error(err))
+		return fiber.ErrInternalServerError
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.WebResponse[*entity.Transaction]{
+		Code:    fiber.StatusOK,
+		Message: "Transaction updated successfully",
 		Data:    transaction,
 	})
 }
