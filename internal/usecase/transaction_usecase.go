@@ -80,6 +80,7 @@ func (tc *TransactionUseCase) GeTransactionById(transactionId, user_id int) (*en
 	}
 	defer tx.Rollback()
 	transaction, err := tc.TransactionRepo.FindTransactionById(tx, transactionId, user_id)
+
 	if err != nil {
 		tc.Log.Error("failed to find transaction", zap.Error(err))
 		return nil, errors.New("failed to find transaction")
@@ -142,5 +143,30 @@ func (tc *TransactionUseCase) DeleteTransactionById(id, user_id int) error {
 		return errors.New("failed to commit")
 	}
 	return nil
+
+}
+
+func (tc *TransactionUseCase) FindTransactionByType(user_id int, transactionType string) (*[]model.TransactionTypeResponse, error) {
+	tx, err := tc.DB.Beginx()
+	if err != nil {
+		tc.Log.Error("failed to create transaction db", zap.Error(err))
+		return nil, errors.New("failed to create transaction")
+	}
+
+	defer tx.Rollback()
+
+	allTransaction, err := tc.TransactionRepo.FindTransactionByType(tx, user_id, transactionType)
+	if err != nil {
+		tc.Log.Error("failed to find transaction", zap.Error(err))
+		return nil, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		tc.Log.Error("failed to commit", zap.Error(err))
+		return nil, errors.New("failed to commit")
+	}
+
+	return allTransaction, nil
 
 }

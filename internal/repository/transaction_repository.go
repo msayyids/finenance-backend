@@ -45,6 +45,7 @@ func (tr *TransactionRepository) FindTransactionById(db *sqlx.Tx, transactionId,
 	if err != nil {
 		return nil, err
 	}
+
 	return &transaction, nil
 }
 
@@ -75,4 +76,27 @@ func (tr *TransactionRepository) DeleteTransactionById(db *sqlx.Tx, id, user_id 
 		return err
 	}
 	return nil
+}
+
+func (tr *TransactionRepository) FindTransactionByType(db *sqlx.Tx, userId int, transactionType string) (*[]model.TransactionTypeResponse, error) {
+	query := `
+SELECT 
+    t.id,
+    t.amount,
+    t.note,
+    c.name AS category_name,
+    c.type,
+    t.created_at
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+WHERE t.user_id = $1 AND LOWER(c.type) = LOWER($2);
+	`
+
+	var transactions []model.TransactionTypeResponse
+	err := db.Select(&transactions, query, userId, transactionType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &transactions, nil
 }
