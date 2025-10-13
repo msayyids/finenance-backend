@@ -108,3 +108,28 @@ WHERE t.user_id = $1 AND LOWER(c.type) = LOWER('income');
 
 	return &transactions, nil
 }
+
+func (tr *TransactionRepository) FindTransactionByExpense(db *sqlx.Tx, userId int) (
+	*[]model.TransactionTypeResponse, error,
+) {
+	query := `
+SELECT 
+    t.id,
+    t.amount,
+    t.note,
+    c.name AS category_name,
+    c.type,
+    t.created_at
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+WHERE t.user_id = $1 AND LOWER(c.type) = LOWER('expense');
+	`
+
+	var transactions []model.TransactionTypeResponse
+	err := db.Select(&transactions, query, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &transactions, nil
+}

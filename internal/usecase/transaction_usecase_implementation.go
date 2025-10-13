@@ -24,6 +24,7 @@ type TransactionUseCaseImpl interface {
 	UpdateTransactionById(id, user_id int, reqTransaction *model.TransactionRequest) (*entity.Transaction, error)
 	DeleteTransactionById(id, user_id int) error
 	FindTransactionByIncome(user_id int) (*[]model.TransactionTypeResponse, error)
+	FindTransactionByExpense(user_id int) (*[]model.TransactionTypeResponse, error)
 }
 
 func NewTransactionUseCase(

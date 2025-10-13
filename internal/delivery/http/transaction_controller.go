@@ -22,6 +22,7 @@ type TransactionControllerImpl interface {
 	UpdateTransactionById(c fiber.Ctx) error
 	DeleteTransactionById(c fiber.Ctx) error
 	GetTransactionsByIncome(c fiber.Ctx) error
+	GetTransactionsByExpense(c fiber.Ctx) error
 }
 
 func NewTransactionController(
@@ -147,6 +148,29 @@ func (tc *TransactionController) GetTransactionsByIncome(c fiber.Ctx) error {
 	}
 
 	allTransaction, err := tc.TransactionUseCase.FindTransactionByIncome(intId)
+	if err != nil {
+		tc.Log.Error("Failed to get all transactions : ", zap.Error(err))
+		return fiber.ErrInternalServerError
+	}
+
+	return c.Status(fiber.StatusOK).JSON(
+		model.WebResponse[*[]model.TransactionTypeResponse]{
+			Code:    fiber.StatusOK,
+			Message: "Transactions retrieved successfully",
+			Data:    allTransaction,
+		},
+	)
+}
+
+func (tc *TransactionController) GetTransactionsByExpense(c fiber.Ctx) error {
+	user := c.Locals("user").(*entity.CustomClaims)
+	intId, err := strconv.Atoi(user.UserID)
+	if err != nil {
+		tc.Log.Error("Failed to convert id : ", zap.Error(err))
+		return fiber.ErrBadRequest
+	}
+
+	allTransaction, err := tc.TransactionUseCase.FindTransactionByExpense(intId)
 	if err != nil {
 		tc.Log.Error("Failed to get all transactions : ", zap.Error(err))
 		return fiber.ErrInternalServerError
