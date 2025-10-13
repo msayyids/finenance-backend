@@ -22,7 +22,7 @@ func (uc *UserUsecase) Create(userRequest *model.UsersRegisterRequest) (model.Us
 		uc.Log.Error("failed to create transaction", zap.Error(err))
 		return model.UsersResponseRegister{}, err
 	}
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	//validasi
 	if err := uc.Validator.Struct(userRequest); err != nil {
@@ -84,13 +84,6 @@ func (uc *UserUsecase) Create(userRequest *model.UsersRegisterRequest) (model.Us
 		return model.UsersResponseRegister{}, fiber.ErrInternalServerError
 	}
 
-	//commit
-	if err := tx.Commit(); err != nil {
-		uc.Log.Warn("failed to commit transaction", zap.Error(err))
-		return model.UsersResponseRegister{}, err
-
-	}
-
 	response := model.ToUserResponse(userRequest.Name, user.Id)
 	return response, nil
 
@@ -102,7 +95,7 @@ func (uc *UserUsecase) Login(userRequest *model.UserLoginRequest) (model.UserLog
 		uc.Log.Error("failed to create transaction", zap.Error(err))
 		return model.UserLoginResponse{}, err
 	}
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	if err := uc.Validator.Struct(userRequest); err != nil {
 		uc.Log.Warn("invalid user request", zap.Error(err))
@@ -147,12 +140,6 @@ func (uc *UserUsecase) Login(userRequest *model.UserLoginRequest) (model.UserLog
 		RefreshToken: refreshToken,
 	}
 
-	if err := tx.Commit(); err != nil {
-		uc.Log.Warn("failed to commit transaction", zap.Error(err))
-		return model.UserLoginResponse{}, fiber.ErrInternalServerError
-
-	}
-
 	return response, nil
 }
 
@@ -162,7 +149,7 @@ func (uc *UserUsecase) RefreshToken(refreshToken string, user_id int) (string, e
 		uc.Log.Error("failed to create transaction", zap.Error(err))
 		return "", err
 	}
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	// cek user
 	user, err := uc.UserRepo.FindUserById(tx, user_id)
@@ -196,12 +183,6 @@ func (uc *UserUsecase) RefreshToken(refreshToken string, user_id int) (string, e
 		return "", err
 	}
 
-	// commit transaksi
-	if err := tx.Commit(); err != nil {
-		uc.Log.Error("failed to commit", zap.Error(err))
-		return "", err
-	}
-
 	return newAccessToken, nil
 }
 
@@ -212,7 +193,7 @@ func (uc *UserUsecase) Logout(refreshToken string) error {
 		uc.Log.Error("failed to create transaction", zap.Error(err))
 		return err
 	}
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	// Parse refresh token → ambil user_id dari claim
 	claims, err := utils.ValidateToken(refreshToken)
@@ -240,12 +221,6 @@ func (uc *UserUsecase) Logout(refreshToken string) error {
 		return err
 	}
 
-	if err := tx.Commit(); err != nil {
-		uc.Log.Warn("failed to commit transaction", zap.Error(err))
-		return err
-
-	}
-
 	return nil
 }
 
@@ -255,7 +230,7 @@ func (uc *UserUsecase) GetProfile(userId string) (model.UserGetProfileResponse, 
 	if err != nil {
 		uc.Log.Error("failed to create transaction", zap.Error(err))
 	}
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	Intid, err := strconv.Atoi(userId)
 	if err != nil {
@@ -266,12 +241,6 @@ func (uc *UserUsecase) GetProfile(userId string) (model.UserGetProfileResponse, 
 	if err != nil {
 		uc.Log.Warn("failed to find user by id", zap.Error(err))
 		return model.UserGetProfileResponse{}, err
-	}
-
-	if err := tx.Commit(); err != nil {
-		uc.Log.Warn("failed to commit transaction", zap.Error(err))
-		return model.UserGetProfileResponse{}, err
-
 	}
 
 	getProfile := model.UserGetProfileResponse{

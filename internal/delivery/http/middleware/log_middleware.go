@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func ZapLogger(logger *zap.Logger) fiber.Handler {
+func LogMiddleware(logger *zap.Logger) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		start := time.Now()
 
@@ -30,7 +30,19 @@ func ZapLogger(logger *zap.Logger) fiber.Handler {
 		path := c.Path()
 		ip := c.IP()
 
-		logger.Info("request log",
+		if latency > 7*time.Second {
+			logger.Warn(
+				"too long latency",
+				zap.String("method", method),
+				zap.String("path", path),
+				zap.Int("status", status),
+				zap.Duration("latency", latency),
+				zap.String("ip", ip),
+			)
+		}
+
+		logger.Info(
+			"request log",
 			zap.String("method", method),
 			zap.String("path", path),
 			zap.Int("status", status),
