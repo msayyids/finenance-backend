@@ -21,10 +21,12 @@ type TransactionControllerImpl interface {
 	GetTransactionById(c fiber.Ctx) error
 	UpdateTransactionById(c fiber.Ctx) error
 	DeleteTransactionById(c fiber.Ctx) error
-	GetTransactionsByType(c fiber.Ctx) error
+	GetTransactionsByIncome(c fiber.Ctx) error
 }
 
-func NewTransactionController(log *zap.Logger, transactionUseCase usecase.TransactionUseCaseImpl) TransactionControllerImpl {
+func NewTransactionController(
+	log *zap.Logger, transactionUseCase usecase.TransactionUseCaseImpl,
+) TransactionControllerImpl {
 	return &TransactionController{
 		TransactionUseCase: transactionUseCase,
 		Log:                log,
@@ -47,10 +49,12 @@ func (tc *TransactionController) CreateNewTransaction(c fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"code":    fiber.StatusCreated,
-		"message": "Transaction created successfully",
-	})
+	return c.Status(fiber.StatusCreated).JSON(
+		fiber.Map{
+			"code":    fiber.StatusCreated,
+			"message": "Transaction created successfully",
+		},
+	)
 
 }
 
@@ -62,11 +66,13 @@ func (tc *TransactionController) GetAllTransactions(c fiber.Ctx) error {
 		tc.Log.Error("Failed to get all transactions : ", zap.Error(err))
 		return fiber.ErrInternalServerError
 	}
-	return c.Status(fiber.StatusOK).JSON(model.WebResponse[[]entity.Transaction]{
-		Code:    fiber.StatusOK,
-		Message: "Transactions retrieved successfully",
-		Data:    transactions,
-	})
+	return c.Status(fiber.StatusOK).JSON(
+		model.WebResponse[[]entity.Transaction]{
+			Code:    fiber.StatusOK,
+			Message: "Transactions retrieved successfully",
+			Data:    transactions,
+		},
+	)
 }
 
 func (tc *TransactionController) GetTransactionById(c fiber.Ctx) error {
@@ -79,11 +85,13 @@ func (tc *TransactionController) GetTransactionById(c fiber.Ctx) error {
 		tc.Log.Error("Failed to get transaction : ", zap.Error(err))
 		return fiber.ErrInternalServerError
 	}
-	return c.Status(fiber.StatusOK).JSON(model.WebResponse[*entity.Transaction]{
-		Code:    fiber.StatusOK,
-		Message: "Transaction retrieved successfully",
-		Data:    transaction,
-	})
+	return c.Status(fiber.StatusOK).JSON(
+		model.WebResponse[*entity.Transaction]{
+			Code:    fiber.StatusOK,
+			Message: "Transaction retrieved successfully",
+			Data:    transaction,
+		},
+	)
 }
 
 func (tc *TransactionController) UpdateTransactionById(c fiber.Ctx) error {
@@ -102,11 +110,13 @@ func (tc *TransactionController) UpdateTransactionById(c fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 
-	return c.Status(fiber.StatusOK).JSON(model.WebResponse[*entity.Transaction]{
-		Code:    fiber.StatusOK,
-		Message: "Transaction updated successfully",
-		Data:    transaction,
-	})
+	return c.Status(fiber.StatusOK).JSON(
+		model.WebResponse[*entity.Transaction]{
+			Code:    fiber.StatusOK,
+			Message: "Transaction updated successfully",
+			Data:    transaction,
+		},
+	)
 }
 
 func (tc *TransactionController) DeleteTransactionById(c fiber.Ctx) error {
@@ -120,13 +130,15 @@ func (tc *TransactionController) DeleteTransactionById(c fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"code":    fiber.StatusOK,
-		"message": "Transaction deleted successfully",
-	})
+	return c.Status(fiber.StatusOK).JSON(
+		fiber.Map{
+			"code":    fiber.StatusOK,
+			"message": "Transaction deleted successfully",
+		},
+	)
 }
 
-func (tc *TransactionController) GetTransactionsByType(c fiber.Ctx) error {
+func (tc *TransactionController) GetTransactionsByIncome(c fiber.Ctx) error {
 	user := c.Locals("user").(*entity.CustomClaims)
 	intId, err := strconv.Atoi(user.UserID)
 	if err != nil {
@@ -134,22 +146,17 @@ func (tc *TransactionController) GetTransactionsByType(c fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	transactionType := c.Params("type")
-
-	tc.Log.Info("Checking incoming request params",
-		zap.String("transaction_type", transactionType),
-		zap.Int("user_id", intId),
-	)
-
-	allTransaction, err := tc.TransactionUseCase.FindTransactionByType(intId, transactionType)
+	allTransaction, err := tc.TransactionUseCase.FindTransactionByIncome(intId)
 	if err != nil {
 		tc.Log.Error("Failed to get all transactions : ", zap.Error(err))
 		return fiber.ErrInternalServerError
 	}
 
-	return c.Status(fiber.StatusOK).JSON(model.WebResponse[*[]model.TransactionTypeResponse]{
-		Code:    fiber.StatusOK,
-		Message: "Transactions retrieved successfully",
-		Data:    allTransaction,
-	})
+	return c.Status(fiber.StatusOK).JSON(
+		model.WebResponse[*[]model.TransactionTypeResponse]{
+			Code:    fiber.StatusOK,
+			Message: "Transactions retrieved successfully",
+			Data:    allTransaction,
+		},
+	)
 }

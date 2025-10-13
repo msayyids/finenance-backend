@@ -35,7 +35,9 @@ func (tr *TransactionRepository) FindAllTransactions(db *sqlx.Tx, user_id int) (
 	return transactions, nil
 }
 
-func (tr *TransactionRepository) FindTransactionById(db *sqlx.Tx, transactionId, user_id int) (*entity.Transaction, error) {
+func (tr *TransactionRepository) FindTransactionById(db *sqlx.Tx, transactionId, user_id int) (
+	*entity.Transaction, error,
+) {
 
 	query := `SELECT * FROM transactions WHERE id = $1 and user_id = $2`
 
@@ -49,7 +51,9 @@ func (tr *TransactionRepository) FindTransactionById(db *sqlx.Tx, transactionId,
 	return &transaction, nil
 }
 
-func (tr *TransactionRepository) UpdateTransactionById(db *sqlx.Tx, id, user_id int, reqTransaction *model.TransactionRequest) (*entity.Transaction, error) {
+func (tr *TransactionRepository) UpdateTransactionById(
+	db *sqlx.Tx, id, user_id int, reqTransaction *model.TransactionRequest,
+) (*entity.Transaction, error) {
 	query := `UPDATE transactions
 SET 
 	category_id = COALESCE(NULLIF($1, 0), category_id),
@@ -61,7 +65,9 @@ RETURNING *;
 `
 
 	var transaction entity.Transaction
-	err := db.QueryRowx(query, reqTransaction.CategoryId, reqTransaction.Amount, reqTransaction.Note, id, user_id).StructScan(&transaction)
+	err := db.QueryRowx(
+		query, reqTransaction.CategoryId, reqTransaction.Amount, reqTransaction.Note, id, user_id,
+	).StructScan(&transaction)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +84,9 @@ func (tr *TransactionRepository) DeleteTransactionById(db *sqlx.Tx, id, user_id 
 	return nil
 }
 
-func (tr *TransactionRepository) FindTransactionByType(db *sqlx.Tx, userId int, transactionType string) (*[]model.TransactionTypeResponse, error) {
+func (tr *TransactionRepository) FindTransactionByIncome(db *sqlx.Tx, userId int) (
+	*[]model.TransactionTypeResponse, error,
+) {
 	query := `
 SELECT 
     t.id,
@@ -89,11 +97,11 @@ SELECT
     t.created_at
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
-WHERE t.user_id = $1 AND LOWER(c.type) = LOWER($2);
+WHERE t.user_id = $1 AND LOWER(c.type) = LOWER('income');
 	`
 
 	var transactions []model.TransactionTypeResponse
-	err := db.Select(&transactions, query, userId, transactionType)
+	err := db.Select(&transactions, query, userId)
 	if err != nil {
 		return nil, err
 	}

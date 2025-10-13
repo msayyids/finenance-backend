@@ -94,7 +94,9 @@ func (tc *TransactionUseCase) GeTransactionById(transactionId, user_id int) (*en
 
 }
 
-func (tc *TransactionUseCase) UpdateTransactionById(id, user_id int, reqTransaction *model.TransactionRequest) (*entity.Transaction, error) {
+func (tc *TransactionUseCase) UpdateTransactionById(
+	id, user_id int, reqTransaction *model.TransactionRequest,
+) (*entity.Transaction, error) {
 
 	tx, err := tc.DB.Beginx()
 	if err != nil {
@@ -146,7 +148,7 @@ func (tc *TransactionUseCase) DeleteTransactionById(id, user_id int) error {
 
 }
 
-func (tc *TransactionUseCase) FindTransactionByType(user_id int, transactionType string) (*[]model.TransactionTypeResponse, error) {
+func (tc *TransactionUseCase) FindTransactionByIncome(user_id int) (*[]model.TransactionTypeResponse, error) {
 	tx, err := tc.DB.Beginx()
 	if err != nil {
 		tc.Log.Error("failed to create transaction db", zap.Error(err))
@@ -155,7 +157,7 @@ func (tc *TransactionUseCase) FindTransactionByType(user_id int, transactionType
 
 	defer tx.Rollback()
 
-	allTransaction, err := tc.TransactionRepo.FindTransactionByType(tx, user_id, transactionType)
+	allTransaction, err := tc.TransactionRepo.FindTransactionByIncome(tx, user_id)
 	if err != nil {
 		tc.Log.Error("failed to find transaction", zap.Error(err))
 		return nil, err

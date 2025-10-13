@@ -43,5 +43,5 @@ func (c *RouteConfig) SetupAuthRoute() {
 	c.App.Get("finenance/transaction/:id", c.TransactionController.GetTransactionById)
 	c.App.Patch("finenance/transaction/:id", c.TransactionController.UpdateTransactionById)
 	c.App.Delete("finenance/transaction/:id", c.TransactionController.DeleteTransactionById)
-	c.App.Get("finenance/transaction/type/:type", c.TransactionController.GetTransactionsByType)
+	c.App.Get("finenance/transaction/type/income", c.TransactionController.GetTransactionsByIncome)
 }
