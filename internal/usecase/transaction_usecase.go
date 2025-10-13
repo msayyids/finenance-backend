@@ -172,3 +172,28 @@ func (tc *TransactionUseCase) FindTransactionByIncome(user_id int) (*[]model.Tra
 	return allTransaction, nil
 
 }
+
+func (tc *TransactionUseCase) FindTransactionByExpense(user_id int) (*[]model.TransactionTypeResponse, error) {
+	tx, err := tc.DB.Beginx()
+	if err != nil {
+		tc.Log.Error("failed to create transaction db", zap.Error(err))
+		return nil, errors.New("failed to create transaction")
+	}
+
+	defer tx.Rollback()
+
+	allTransaction, err := tc.TransactionRepo.FindTransactionByExpense(tx, user_id)
+	if err != nil {
+		tc.Log.Error("failed to find transaction", zap.Error(err))
+		return nil, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		tc.Log.Error("failed to commit", zap.Error(err))
+		return nil, errors.New("failed to commit")
+	}
+
+	return allTransaction, nil
+
+}

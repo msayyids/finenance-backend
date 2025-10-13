@@ -18,6 +18,7 @@ type TransactionRepositoryImpl interface {
 	)
 	DeleteTransactionById(db *sqlx.Tx, id, user_id int) error
 	FindTransactionByIncome(db *sqlx.Tx, userId int) (*[]model.TransactionTypeResponse, error)
+	FindTransactionByExpense(db *sqlx.Tx, userId int) (*[]model.TransactionTypeResponse, error)
 }
 
 func NewTransactionRepository() TransactionRepositoryImpl {
