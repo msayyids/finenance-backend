@@ -4,6 +4,7 @@ import (
 	"errors"
 	"finenance-app/internal/entity"
 	"finenance-app/internal/model"
+	"finenance-app/internal/utils"
 	"time"
 
 	"go.uber.org/zap"
@@ -18,7 +19,7 @@ func (tc *TransactionUseCase) CreateTransaction(user_id int, request *model.Tran
 
 	}
 
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	if err := tc.Validator.Struct(request); err != nil {
 		tc.Log.Warn("invalid user request", zap.Error(err))
@@ -40,11 +41,6 @@ func (tc *TransactionUseCase) CreateTransaction(user_id int, request *model.Tran
 		return errors.New("failed to create new transaction")
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		tc.Log.Error("failed to commit", zap.Error(err))
-		return errors.New("failed to commit")
-	}
 	return nil
 }
 
@@ -56,17 +52,12 @@ func (tc *TransactionUseCase) GetAllTransactions(user_id int) ([]entity.Transact
 
 	}
 
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	allTransaction, err := tc.TransactionRepo.FindAllTransactions(tx, user_id)
 	if err != nil {
 		tc.Log.Error("failed to find all transactions", zap.Error(err))
 		return nil, errors.New("failed to find all transactions")
-	}
-	err = tx.Commit()
-	if err != nil {
-		tc.Log.Error("failed to commit", zap.Error(err))
-		return nil, errors.New("failed to commit")
 	}
 
 	return allTransaction, nil
@@ -78,18 +69,14 @@ func (tc *TransactionUseCase) GeTransactionById(transactionId, user_id int) (*en
 		tc.Log.Error("failed to create transaction db")
 		return nil, errors.New("failed to create transaction")
 	}
-	defer tx.Rollback()
-	transaction, err := tc.TransactionRepo.FindTransactionById(tx, transactionId, user_id)
+	defer utils.CommitOrRollback(tx, &err)
 
+	transaction, err := tc.TransactionRepo.FindTransactionById(tx, transactionId, user_id)
 	if err != nil {
 		tc.Log.Error("failed to find transaction", zap.Error(err))
 		return nil, errors.New("failed to find transaction")
 	}
-	err = tx.Commit()
-	if err != nil {
-		tc.Log.Error("failed to commit", zap.Error(err))
-		return nil, errors.New("failed to commit")
-	}
+
 	return transaction, nil
 
 }
@@ -104,7 +91,7 @@ func (tc *TransactionUseCase) UpdateTransactionById(
 		return nil, errors.New("failed to create transaction")
 	}
 
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	if err := tc.Validator.Struct(reqTransaction); err != nil {
 		tc.Log.Warn("invalid user request", zap.Error(err))
@@ -117,11 +104,6 @@ func (tc *TransactionUseCase) UpdateTransactionById(
 		return nil, errors.New("failed to update transaction")
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		tc.Log.Error("failed to commit", zap.Error(err))
-		return nil, errors.New("failed to commit")
-	}
 	return transaction, nil
 }
 
@@ -132,18 +114,14 @@ func (tc *TransactionUseCase) DeleteTransactionById(id, user_id int) error {
 		return errors.New("failed to create transaction")
 	}
 
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	err = tc.TransactionRepo.DeleteTransactionById(tx, id, user_id)
 	if err != nil {
 		tc.Log.Error("failed to delete transaction", zap.Error(err))
 		return errors.New("failed to delete transaction")
 	}
-	err = tx.Commit()
-	if err != nil {
-		tc.Log.Error("failed to commit", zap.Error(err))
-		return errors.New("failed to commit")
-	}
+
 	return nil
 
 }
@@ -155,18 +133,12 @@ func (tc *TransactionUseCase) FindTransactionByIncome(user_id int) (*[]model.Tra
 		return nil, errors.New("failed to create transaction")
 	}
 
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	allTransaction, err := tc.TransactionRepo.FindTransactionByIncome(tx, user_id)
 	if err != nil {
 		tc.Log.Error("failed to find transaction", zap.Error(err))
 		return nil, err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		tc.Log.Error("failed to commit", zap.Error(err))
-		return nil, errors.New("failed to commit")
 	}
 
 	return allTransaction, nil
@@ -180,18 +152,12 @@ func (tc *TransactionUseCase) FindTransactionByExpense(user_id int) (*[]model.Tr
 		return nil, errors.New("failed to create transaction")
 	}
 
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	allTransaction, err := tc.TransactionRepo.FindTransactionByExpense(tx, user_id)
 	if err != nil {
 		tc.Log.Error("failed to find transaction", zap.Error(err))
 		return nil, err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		tc.Log.Error("failed to commit", zap.Error(err))
-		return nil, errors.New("failed to commit")
 	}
 
 	return allTransaction, nil

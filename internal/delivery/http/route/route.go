@@ -15,10 +15,11 @@ type RouteConfig struct {
 	CategoryController    http.CategoryControllerImplementation
 	TransactionController http.TransactionControllerImpl
 	AuthMiddleware        fiber.Handler
+	LoggerMiddleware      fiber.Handler
 }
 
 func (c *RouteConfig) SetupRouteConfig() {
-	c.App.Use(middleware.ZapLogger(c.Logger))
+	c.App.Use(middleware.LogMiddleware(c.Logger))
 	c.SetupGlobalRoute()
 	c.SetupAuthRoute()
 }

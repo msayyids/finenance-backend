@@ -4,6 +4,7 @@ import (
 	"errors"
 	"finenance-app/internal/entity"
 	"finenance-app/internal/model"
+	"finenance-app/internal/utils"
 
 	"go.uber.org/zap"
 )
@@ -15,7 +16,7 @@ func (cc *CategoryUsecase) CreateNewCategory(user_id int, request *model.Categor
 		cc.Log.Error("failed to create transaction", zap.Error(err))
 		return errors.New("failed to create transaction")
 	}
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	if err := cc.Validator.Struct(request); err != nil {
 		cc.Log.Warn("invalid user request", zap.Error(err))
@@ -27,11 +28,6 @@ func (cc *CategoryUsecase) CreateNewCategory(user_id int, request *model.Categor
 		return errors.New("failed to add category")
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		cc.Log.Error("failed to commit", zap.Error(err))
-		return errors.New("failed to commit")
-	}
 	return nil
 }
 
@@ -42,17 +38,12 @@ func (cc *CategoryUsecase) GetAllCategory(user_id int) (*[]entity.Categories, er
 		cc.Log.Error("failed to create transaction", zap.Error(err))
 		return &[]entity.Categories{}, errors.New("failed to create transaction")
 	}
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	category, err := cc.CategoryRepo.GetAllCategories(tx, user_id)
 	if err != nil {
 		cc.Log.Error("failed to get category", zap.Error(err))
 		return &[]entity.Categories{}, errors.New("failed to get category")
-	}
-	err = tx.Commit()
-	if err != nil {
-		cc.Log.Error("failed to commit", zap.Error(err))
-		return &[]entity.Categories{}, errors.New("failed to commit")
 	}
 
 	// final response
@@ -68,30 +59,27 @@ func (cc *CategoryUsecase) GetCategoryById(user_id, id int) (*entity.Categories,
 		return &entity.Categories{}, errors.New("failed to create transaction")
 	}
 
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	category, err := cc.CategoryRepo.GetCategoriesById(tx, user_id, id)
 	if err != nil {
 		cc.Log.Error("failed to get category", zap.Error(err))
 		return &entity.Categories{}, errors.New("failed to get category")
 	}
-	err = tx.Commit()
-	if err != nil {
-		cc.Log.Error("failed to commit", zap.Error(err))
-		return &entity.Categories{}, errors.New("failed to commit")
-	}
 
 	// final response
 
 	return category, nil
 }
-func (cc *CategoryUsecase) UpdateCategoryById(id, user_id int, request *model.CategoryRequest) (*entity.Categories, error) {
+func (cc *CategoryUsecase) UpdateCategoryById(id, user_id int, request *model.CategoryRequest) (
+	*entity.Categories, error,
+) {
 	tx, err := cc.DB.Beginx()
 	if err != nil {
 		cc.Log.Error("failed to create transaction", zap.Error(err))
 		return &entity.Categories{}, errors.New("failed to create transaction")
 	}
-	defer tx.Rollback()
+	defer utils.CommitOrRollback(tx, &err)
 
 	if err := cc.Validator.Struct(request); err != nil {
 		cc.Log.Warn("invalid user request", zap.Error(err))
@@ -104,11 +92,6 @@ func (cc *CategoryUsecase) UpdateCategoryById(id, user_id int, request *model.Ca
 		return &entity.Categories{}, errors.New("failed to update category")
 	}
 
-	if err := tx.Commit(); err != nil {
-		cc.Log.Error("failed to commit", zap.Error(err))
-		return &entity.Categories{}, errors.New("failed to commit")
-	}
-
 	return updatedCategory, nil
 }
 
@@ -118,16 +101,12 @@ func (cc *CategoryUsecase) DeleteCategoryById(user_id, id int) error {
 		cc.Log.Error("failed to create transaction", zap.Error(err))
 		return errors.New("failed to create transaction")
 	}
-	
-	defer tx.Rollback()
+
+	defer utils.CommitOrRollback(tx, &err)
 	if err := cc.CategoryRepo.DeleteCategoryById(tx, user_id, id); err != nil {
 		cc.Log.Error("failed to delete category", zap.Error(err))
 		return errors.New("failed to delete category")
 	}
-
-	if err := tx.Commit(); err != nil {
-		cc.Log.Error("failed to commit", zap.Error(err))
-		return errors.New("failed to commit")
-	}
+	
 	return nil
 }
